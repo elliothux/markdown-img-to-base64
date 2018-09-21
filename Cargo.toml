@@ -1,0 +1,9 @@
+[package]
+name = "markdown-img-to-base64"
+version = "0.1.0"
+authors = ["HuQingyang <i@do.codes>"]
+
+[dependencies]
+regex = "1"
+reqwest = "0.9"
+image-base64 = "0.1"
