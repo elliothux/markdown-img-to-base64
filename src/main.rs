@@ -1,5 +1,6 @@
 extern crate regex;
 extern crate reqwest;
+extern crate image_base64;
 
 use std::{env, path, fs, io};
 use std::io::prelude::*;
@@ -27,7 +28,9 @@ fn main() {
             .unwrap()
             .to_string();
         let content = read_md(md_path);
-        println!("{}", convert(content));
+        let out = convert(content);
+        let filename = "test-out.md".to_owned();
+        write_md(out, filename);
     }
 
     println!("✨ Done!");
@@ -38,20 +41,23 @@ fn read_md(path: String) -> String {
         .expect("file not found");
     let mut contents = String::new();
     f.read_to_string(&mut contents)
-        .expect("something went wrong reading the file");
+        .expect(format!("⛔ Something went wrong reading file: {}", &path).as_str());
     contents
 }
 
-fn convert(_content: String) -> String {
+fn convert(mut content: String) -> String {
     let re = Regex::new(r"(?x)!\[(?P<desc>.*)]\s*\((?P<url>https?://.+)\)").unwrap();
-    let mut content = "##hello\n![111](https://xx.yy)\n#d".to_string();
     while let Some(m) = &re.find(&content.clone()) {
-        let url = &re.replace(m.as_str(), "$url");
-        let desc = &re.replace(m.as_str(), "desc");
-        let filename = url.clone().split("/").collect::<Vec<str>>().pop();
-        let md_img = format!("![{}](data:image/png;base64,{})",
-             desc.clone(),
-             url_to_base64(url.clone().to_string())
+        let url = &re.replace(m.as_str(), "$url").clone().to_string();
+        let desc = &re.replace(m.as_str(), "desc").clone().to_string();
+        let filename = url
+            .split("/")
+            .collect::<Vec<&str>>()
+            .pop()
+            .unwrap();
+        let md_img = format!("![{}]({})",
+             desc,
+             url_to_base64(&url, &filename)
         );
 
         let start = &content.clone()[..m.start()];
@@ -61,9 +67,31 @@ fn convert(_content: String) -> String {
     content.to_string()
 }
 
-fn url_to_base64(url: String, filename: String) -> String {
-    let mut resp = reqwest::get(url).expect("request failed");
-    let mut out = fs::File::create(filename).expect("failed to create file");
-    io::copy(&mut resp, &mut out).expect("failed to copy content");
+fn url_to_base64(url: &str, filename: &str) -> String {
+    let mut resp = reqwest::get(url).expect("⛔ Request failed");
+    let mut out = fs::File::create(filename).expect("⛔ Failed to create file");
+    io::copy(&mut resp, &mut out).expect("⛔ Failed to copy content");
     image_base64::to_base64(filename)
+}
+
+fn write_md(content: String, filename: String) {
+    let mut file = match fs::File::create(&filename) {
+        Err(why) => panic!(
+            "⛔ Couldn't create {}: {:?}",
+            &filename,
+            why
+        ),
+        Ok(file) => file,
+    };
+
+    match file.write_all(content.as_bytes()) {
+        Err(why) => {
+            panic!(
+                "⛔ Couldn't write to {}: {:?}",
+                &filename,
+                why
+            )
+        },
+        Ok(_) => println!("✨ Successfully wrote to {}", &filename),
+    }
 }

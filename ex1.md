@@ -22,7 +22,7 @@ even with titles [body](  <http://link> 'title')
 
 Wonderful [x]  eee
 
-Images ![alt text] (http://xx) are also ![xx][link] parsed
+Images ![alt text](https://www.baidu.com/img/bd_logo1.png?where=super) are also ![xx][link] parsed
 
 Setext headers
 also
