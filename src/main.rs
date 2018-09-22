@@ -27,17 +27,37 @@ fn main() {
             .to_str()
             .unwrap()
             .to_string();
+        let filename = path::Path::new(md_path.clone().as_str())
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        let out_name = format!(
+            "{}__out.md",
+            filename
+                .split(".md")
+                .collect::<Vec<&str>>()[0]
+        );
+        let out_path = path::Path::new(&md_path)
+            .join("../")
+            .canonicalize()
+            .unwrap()
+            .join(&out_name)
+            .to_str()
+            .unwrap()
+            .to_string();
+//        println!("{}-{}", out_name, out_path);
         let content = read_md(md_path);
         let out = convert(content);
-        let filename = "test-out.md".to_owned();
-        write_md(out, filename);
+        write_md(out, out_path);
     }
 
     println!("✨ Done!");
 }
 
 fn read_md(path: String) -> String {
-    let mut f = fs::File::open(path)
+    let mut f = fs::File::open(&path)
         .expect("file not found");
     let mut contents = String::new();
     f.read_to_string(&mut contents)
@@ -71,7 +91,9 @@ fn url_to_base64(url: &str, filename: &str) -> String {
     let mut resp = reqwest::get(url).expect("⛔ Request failed");
     let mut out = fs::File::create(filename).expect("⛔ Failed to create file");
     io::copy(&mut resp, &mut out).expect("⛔ Failed to copy content");
-    image_base64::to_base64(filename)
+    let out: String = image_base64::to_base64(filename);
+    fs::remove_file(filename);
+    out
 }
 
 fn write_md(content: String, filename: String) {
