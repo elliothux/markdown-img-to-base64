@@ -7,3 +7,6 @@ authors = ["HuQingyang <i@do.codes>"]
 regex = "1"
 reqwest = "0.9"
 image-base64 = "0.1"
+mime_guess = "2.0.0-alpha.6"
+tree_magic = "0.2.0"
+rustc-serialize = "0.3"
