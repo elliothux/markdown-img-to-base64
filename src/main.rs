@@ -2,13 +2,10 @@ extern crate regex;
 extern crate reqwest;
 extern crate image_base64;
 extern crate tree_magic;
-extern crate rustc_serialize;
 
 use std::{env, path, fs, io};
 use std::io::prelude::*;
 use regex::Regex;
-use rustc_serialize::base64::{ToBase64, MIME};
-use rustc_serialize::hex::{ToHex};
 
 
 fn main() {
@@ -149,16 +146,4 @@ fn detect_img_type(img_path: &str) -> String {
         .pop()
         .unwrap()
         .to_string()
-}
-
-fn get_type(file: &str) -> &str {
-    if Regex::new(r"^ffd8ffe0").unwrap().is_match(file) {
-        return "jpg";
-    } else if Regex::new(r"^89504e47").unwrap().is_match(file) {
-        return "png";
-    }
-    else if Regex::new(r"^47494638").unwrap().is_match(file) {
-        return "gif";
-    }
-    return "jpg";
 }
