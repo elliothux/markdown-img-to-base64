@@ -58,7 +58,7 @@ fn main() {
 
 fn read_md(path: String) -> String {
     let mut f = fs::File::open(&path)
-        .expect("file not found");
+        .expect("⛔️ File not found");
     let mut contents = String::new();
     f.read_to_string(&mut contents)
         .expect(format!("⛔ Something went wrong reading file: {}", &path).as_str());
